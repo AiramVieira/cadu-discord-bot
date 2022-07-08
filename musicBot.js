@@ -33,10 +33,10 @@ client.on('messageCreate', (message) => {
   const command = args.shift().toLowerCase();
   let guildQueue = client.player.getQueue(message.guild.id);
 
-  if(!guildQueue) {
-    message.channel.send('Você precisa estar em um canal de voz!');
-    return;
-  }
+  // if(!guildQueue) {
+  //   message.channel.send('Você precisa estar em um canal de voz!');
+  //   return;
+  // }
 
   if (command === 'play' || command === 'p') {
     const play = async (url) => {
