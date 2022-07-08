@@ -33,10 +33,15 @@ client.on('messageCreate', (message) => {
   const command = args.shift().toLowerCase();
   let guildQueue = client.player.getQueue(message.guild.id);
 
+  // ele não valida se é o bot enviando mensagem
   // if(!guildQueue) {
   //   message.channel.send('Você precisa estar em um canal de voz!');
   //   return;
   // }
+
+  if(message.author.id === client.user.id) {
+    console.log('mensagem do bot')
+  };
 
   if (command === 'play' || command === 'p') {
     const play = async (url) => {
