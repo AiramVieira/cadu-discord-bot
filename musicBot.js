@@ -14,7 +14,7 @@ const client = new Discord.Client({
 });
 
 const settings = {
-  prefix: "!",
+  prefixex: ["#", "!", "?", "@"],
   token: process.env.DISCORD_KEY,
 };
 
@@ -29,23 +29,20 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", (message) => {
-  const args = message.content
-    .slice(settings.prefix.length)
-    .trim()
-    .split(/ +/g);
-  const command = args.shift().toLowerCase();
-  let guildQueue = client.player.getQueue(message.guild.id);
+  if (!message.content.charAt(0).includes(settings.prefixex)) return;
 
-  // ele não valida se é o bot enviando mensagem
-  // if(!guildQueue) {
-  //   message.channel.send('Você precisa estar em um canal de voz!');
-  //   return;
-  // }
+  const args = message.content.slice(1).trim().split(/ +/g);
+  const command = args.shift().toLowerCase();
+
+  let guildQueue = client.player.getQueue(message.guild.id);
 
   if (message.author.id === client.user.id || message.author.bot) {
     console.log("mensagem do bot");
   } else {
-    console.log('mensagem do usuário', message.author.username);
+    if (!guildQueue) {
+      returnmessage.channel.send("Você precisa estar em um canal de voz!");
+    }
+    console.log("mensagem do usuário", message.author.username);
   }
 
   if (command === "play" || command === "p") {
@@ -66,12 +63,13 @@ client.on("messageCreate", (message) => {
           message.channel.send(currentPlaylist);
           return;
         })
-        .catch((err) => {
+        .catch(async (err) => {
           console.log(err);
           if (guildQueue) {
-            setTimeout(() => {
-              guildQueue.stop();
-            }, 10 * 1000 * 60);
+            await new Promise((resolve, reject) =>
+              setTimeout(resolve, 1000 * 60)
+            );
+            guildQueue.stop();
           }
         });
     };
@@ -133,7 +131,10 @@ client.on("messageCreate", (message) => {
   }
 
   if (command === "playlist") {
-    message.channel.send(currentPlaylist);
+    if (currentPlaylist) {
+      return message.channel.send(currentPlaylist);
+    }
+    message.channel.send("Não há uma playlist!");
   }
 });
 
