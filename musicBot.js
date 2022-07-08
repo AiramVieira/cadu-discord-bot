@@ -14,7 +14,7 @@ const client = new Discord.Client({
 });
 
 const settings = {
-  prefixex: ["#", "!", "?", "@"],
+  prefixes: ["#", "!", "?", "@"],
   token: process.env.DISCORD_KEY,
 };
 
@@ -29,7 +29,7 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", (message) => {
-  if (!message.content.charAt(0).includes(settings.prefixex)) return;
+  if (!settings.prefixes.includes(message.content.charAt(0))) return;
 
   const args = message.content.slice(1).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
@@ -39,8 +39,8 @@ client.on("messageCreate", (message) => {
   if (message.author.id === client.user.id || message.author.bot) {
     console.log("mensagem do bot");
   } else {
-    if (!guildQueue) {
-      returnmessage.channel.send("Você precisa estar em um canal de voz!");
+    if (!message.member.voice.channel) {
+      return message.channel.send("Você precisa estar em um canal de voz!");
     }
     console.log("mensagem do usuário", message.author.username);
   }
