@@ -30,8 +30,13 @@ client.on('ready', () => {
 
 client.on('messageCreate', (message) => {
   const args = message.content.slice(settings.prefix.length).trim().split(/ +/g);
-  const command = args.shift();
+  const command = args.shift().toLowerCase();
   let guildQueue = client.player.getQueue(message.guild.id);
+
+  if(!guildQueue) {
+    message.channel.send('Você precisa estar em um canal de voz!');
+    return;
+  }
 
   if (command === 'play' || command === 'p') {
     const play = async (url) => {
@@ -79,7 +84,7 @@ client.on('messageCreate', (message) => {
         message.channel.send(resp);
 
         const filter = (m) => !isNaN(m.content) && m.content < videos.length + 1 && m.content > 0;
-        const collector = message.channel.createMessageCollector({filter, max: 1});
+        const collector = message.channel.createMessageCollector({filter, max: 1, time: 1000 * 10});
 
         collector.on('collect', async (m) => {
           const index = parseInt(m.content);
