@@ -36,16 +36,21 @@ client.on("messageCreate", (message) => {
 
   let guildQueue = client.player.getQueue(message.guild.id);
 
-  if (message.author.id === client.user.id || message.author.bot) {
-    console.log("mensagem do bot");
-  } else {
-    if (!message.member.voice.channel) {
-      return message.channel.send("Você precisa estar em um canal de voz!");
+  const chatValidation = () => {
+    if (message.author.id === client.user.id || message.author.bot) {
+      console.log("mensagem do bot");
+      return false;
+    } else {
+      if (!message.member.voice.channel) {
+        message.channel.send("Você precisa estar em um canal de voz!");
+        return false;
+      }
+      console.log("mensagem do usuário", message.author.username);
+      return true;
     }
-    console.log("mensagem do usuário", message.author.username);
-  }
+  };
 
-  if (command === "play" || command === "p") {
+  if ((command === "play" || command === "p") && chatValidation) {
     const play = async (url) => {
       let queue = client.player.createQueue(message.guild.id);
       await queue.join(message.member.voice.channel);
@@ -114,19 +119,19 @@ client.on("messageCreate", (message) => {
   }
 
   console.log("Command: ", command);
-  if (command === "skip") {
+  if (command === "skip" && chatValidation) {
     guildQueue.skip();
   }
 
-  if (command === "stop") {
+  if (command === "stop" && chatValidation) {
     guildQueue.stop();
   }
 
-  if (command === "pause") {
+  if (command === "pause" && chatValidation) {
     guildQueue.setPaused(true);
   }
 
-  if (command === "resume") {
+  if (command === "resume" && chatValidation) {
     guildQueue.setPaused(false);
   }
 
