@@ -50,7 +50,7 @@ client.on("messageCreate", (message) => {
     }
   };
 
-  if ((command === "play" || command === "p") && chatValidation) {
+  if ((command === "play" || command === "p") && chatValidation()) {
     const play = async (url) => {
       let queue = client.player.createQueue(message.guild.id);
       await queue.join(message.member.voice.channel);
@@ -119,19 +119,19 @@ client.on("messageCreate", (message) => {
   }
 
   console.log("Command: ", command);
-  if (command === "skip" && chatValidation) {
+  if (command === "skip" && chatValidation()) {
     guildQueue.skip();
   }
 
-  if (command === "stop" && chatValidation) {
+  if (command === "stop" && chatValidation()) {
     guildQueue.stop();
   }
 
-  if (command === "pause" && chatValidation) {
+  if (command === "pause" && chatValidation()) {
     guildQueue.setPaused(true);
   }
 
-  if (command === "resume" && chatValidation) {
+  if (command === "resume" && chatValidation()) {
     guildQueue.setPaused(false);
   }
 
