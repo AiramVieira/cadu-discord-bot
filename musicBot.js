@@ -14,9 +14,11 @@ const client = new Discord.Client({
 });
 
 const settings = {
-  prefixes: ["#", "!", "?", "@"],
+  prefixes: ["#", "!", "?", "-"],
   token: process.env.DISCORD_KEY,
 };
+
+const validRoomNames = ["comando", "comandos", "command", "commands"];
 
 const player = new Player(client, {
   leaveOnEmpty: false,
@@ -41,11 +43,24 @@ client.on("messageCreate", (message) => {
       console.log("mensagem do bot");
       return false;
     } else {
+      const roomName = message.channel.name;
+      const canal = client.channels.cache.find(
+        (channel) =>
+          validRoomNames.includes(channel.name) &&
+          message.guild.id === channel.guild.id
+      );
+      console.log(canal);
+
+      if (!validRoomNames.includes(roomName)) {
+        message.channel.send(`Só obedeço comandos na sala <#${canal.id}>`);
+        return false;
+      }
+
       if (!message.member.voice.channel) {
         message.channel.send("Você precisa estar em um canal de voz!");
         return false;
       }
-      console.log("mensagem do usuário", message.author.username);
+
       return true;
     }
   };
