@@ -59,7 +59,6 @@ client.on("messageCreate", (message) => {
         message.channel.send("Você precisa estar em um canal de voz!");
         return false;
       }
-
       return true;
     }
   };
