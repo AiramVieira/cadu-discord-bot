@@ -4,6 +4,7 @@
   "description": "",
   "main": "musicBot.js",
   "scripts": {
+    "start": "node musicBot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

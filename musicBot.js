@@ -49,7 +49,6 @@ client.on("messageCreate", (message) => {
           validRoomNames.includes(channel.name) &&
           message.guild.id === channel.guild.id
       );
-      console.log(canal);
 
       if (!validRoomNames.includes(roomName)) {
         message.channel.send(`Só obedeço comandos na sala <#${canal.id}>`);
