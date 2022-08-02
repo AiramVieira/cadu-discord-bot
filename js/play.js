@@ -25,7 +25,7 @@ const play = async (url, message, client) => {
     });
 };
 
-const doSearch = (message, args) => {
+const doSearch = (message, args, client) => {
   search(args.join(" "), (err, res) => {
     if (err) return message.channel.send("Deu ruim, não achei as músicas");
 
