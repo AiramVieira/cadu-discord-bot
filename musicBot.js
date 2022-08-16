@@ -22,13 +22,13 @@ const settings = {
   token: process.env.DISCORD_KEY,
 };
 
-
 const player = new Player(client, {
   leaveOnEmpty: false,
-});
-client.player = player;
-addSpeechEvent(client, {lang: 'pt-BR'});
+})
 
+console.log(player);
+
+addSpeechEvent(client, { lang: "pt-BR" });
 
 client.on("ready", () => {
   console.log("I am ready to Play songs");
@@ -36,13 +36,13 @@ client.on("ready", () => {
 });
 
 client.on("speech", (message) => {
-  console.log(message.content)
   if (!message.content) return;
   if (message.author.id === client.user.id || message.author.bot) return;
+
   const args = message.content.replace(/^\w*\s/g, "");
 
   if (message.content.toLowerCase().startsWith("play")) {
-    play(args, message, client);
+    play(args, player, message);
   }
 });
 
@@ -52,66 +52,82 @@ client.on("messageCreate", (message) => {
   const args = message.content.slice(1).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
 
-  // const chatValidation = () => {
-  //   if (message.author.id === client.user.id || message.author.bot) {
-  //     return false;
-  //   } else {
-  //     const roomName = message.channel.name;
-  //     const canal = client.channels.cache.find(
-  //       (channel) =>
-  //         validRoomNames.includes(channel.name) &&
-  //         message.guild.id === channel.guild.id
-  //     );
+  switch (command) {
+    case "play":
+    case "p":
+      if (!chatValidation(client, message)) return;
 
-  //     if (!validRoomNames.includes(roomName)) {
-  //       message.channel.send(`Só obedeço comandos na sala <#${canal.id}>`);
-  //       return false;
-  //     }
-
-  //     if (!message.member.voice.channel) {
-  //       message.channel.send("Você precisa estar em um canal de voz!");
-  //       return false;
-  //     }
-  //     return true;
-  //   }
-  // };
-
-  if ((command === "play" || command === "p") && chatValidation(message, client)) {
-    if (args.join(" ").startsWith("https://")) {
-      play(args.join(" "), message, client);
-    } else {
-      doSearch(message, args, client);
-    }
+      if (args.join(" ").startsWith("https://")) {
+        play(args.join(" "), player, message);
+      } else {
+        doSearch(args, player, message);
+      }
+      break;
+    case "skip":
+      if (!chatValidation(client, message)) return;
+      getGuildQueue(player, message).skip();
+      break;
+    case "stop":
+      if (!chatValidation(client, message)) return;
+      getGuildQueue(player, message).stop();
+      break;
+    case "pause":
+      if (!chatValidation(client, message)) return;
+      getGuildQueue(player, message).setPaused(true);
+      break;
+    case "resume":
+      if (!chatValidation(client, message)) return;
+      getGuildQueue(player, message).setPaused(false);
+      break;
+    case "playlist":
+      if (currentPlaylist) {
+        return message.channel.send(currentPlaylist);
+      }
+      message.channel.send("Não há uma playlist!");
+      break;
+    case "join":
+      joinRoom(player, message);
+      break;
   }
+
+  // if (
+  //   (command === "play" || command === "p") &&
+  //   chatValidation(client, message)
+  // ) {
+  //   if (args.join(" ").startsWith("https://")) {
+  //     play(args.join(" "), message, client);
+  //   } else {
+  //     doSearch(message, args, client);
+  //   }
+  // }
 
   console.log("Command: ", command);
-  if (command === "skip" && chatValidation(message, client)) {
-    getGuildQueue(client, message).skip();
-  }
+  // if (command === "skip" && chatValidation(client, message)) {
+  //   getGuildQueue(player, message).skip();
+  // }
 
-  if (command === "stop" && chatValidation(message, client)) {
-    getGuildQueue(client, message).stop();
-  }
+  // if (command === "stop" && chatValidation(client, message)) {
+  //   getGuildQueue(player, message).stop();
+  // }
 
-  if (command === "pause" && chatValidation(message, client)) {
-    getGuildQueue(client, message).setPaused(true);
-  }
+  // if (command === "pause" && chatValidation(client, message)) {
+  //   getGuildQueue(player, message).setPaused(true);
+  // }
 
-  if (command === "resume" && chatValidation(message, client)) {
-    getGuildQueue(client, message).setPaused(false);
-  }
+  // if (command === "resume" && chatValidation(client, message)) {
+  //   getGuildQueue(player, message).setPaused(false);
+  // }
 
-  if (command === "playlist") {
-    if (currentPlaylist) {
-      return message.channel.send(currentPlaylist);
-    }
-    message.channel.send("Não há uma playlist!");
-  }
+  // if (command === "playlist") {
+  //   if (currentPlaylist) {
+  //     return message.channel.send(currentPlaylist);
+  //   }
+  //   message.channel.send("Não há uma playlist!");
+  // }
 
-  if (command === "join" && chatValidation(message, client)) {
-    joinRoom(message, client);
-  }
+  // if (command === "join" && chatValidation(client, message)) {
+  //   joinRoom(message, client);
+  // }
 });
 
 client.login(settings.token);
-

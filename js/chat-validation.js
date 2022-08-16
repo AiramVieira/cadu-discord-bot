@@ -1,6 +1,6 @@
 const _validRoomNames = ["comando", "comandos", "command", "commands"];
 
-const chatValidation = (message, client) => {
+const chatValidation = (client, message) => {
   if (message.author.id === client.user.id || message.author.bot) {
     return false;
   } else {

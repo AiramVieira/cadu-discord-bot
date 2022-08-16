@@ -1,8 +1,8 @@
 const search = require("yt-search");
-const { joinRoom } = require("./room");
+const { joinRoom, exitRoom } = require("./room");
 
-const play = async (url, message, client) => {
-  let queue = await joinRoom(message, client);
+const play = async (url, player, message) => {
+  let queue = await joinRoom(player, message);
   // let queue = client.player.createQueue(message.guild.id);
   // await queue.join(message.member.voice.channel);
 
@@ -21,11 +21,11 @@ const play = async (url, message, client) => {
     })
     .catch(async (err) => {
       console.log(err);
-      setTimeout(exitRoom(client, message), 1000 * 60);
+      exitRoom(player, message);
     });
 };
 
-const doSearch = (message, args, client) => {
+const doSearch = (args, player, message) => {
   search(args.join(" "), (err, res) => {
     if (err) return message.channel.send("Deu ruim, não achei as músicas");
 
@@ -51,7 +51,7 @@ const doSearch = (message, args, client) => {
     collector.on("collect", async (m) => {
       const index = parseInt(m.content);
       if (!isNaN(index)) {
-        play(videos[index - 1].url, message, client);
+        play(videos[index - 1].url, player, message);
       }
     });
 
