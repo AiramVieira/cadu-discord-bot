@@ -26,8 +26,6 @@ const player = new Player(client, {
   leaveOnEmpty: false,
 })
 
-console.log(player);
-
 addSpeechEvent(client, { lang: "pt-BR" });
 
 client.on("ready", () => {
