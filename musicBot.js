@@ -22,6 +22,7 @@ const validRoomNames = ["comando", "comandos", "command", "commands"];
 
 const player = new Player(client, {
   leaveOnEmpty: false,
+  leaveOnEnd: false,
 });
 client.player = player;
 
