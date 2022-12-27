@@ -1,4 +1,5 @@
 const search = require("yt-search");
+const { getMusicButtonsOptions } = require("./button");
 const { joinRoom, exitRoom } = require("./room");
 
 const play = async (url, player, message) => {
@@ -26,7 +27,7 @@ const play = async (url, player, message) => {
 };
 
 const doSearch = (args, player, message) => {
-  search(args.join(" "), (err, res) => {
+  search(args.join(" "), async (err, res) => {
     if (err) return message.channel.send("Deu ruim, não achei as músicas");
 
     const videos = res.videos.slice(0, 5);
@@ -36,27 +37,41 @@ const doSearch = (args, player, message) => {
       resp += `**[${parseInt(i) + 1}]:** \`${videos[i].title}\`\n`;
     }
 
-    resp += `\n**Escolhe um número aí meu patrão \`1-${videos.length}\``;
+    // resp += `\n**Escolhe um número aí meu patrão \`1-${videos.length}\``;
 
-    message.channel.send(resp);
+    // message.channel.send(resp);
 
-    const filter = (m) =>
-      !isNaN(m.content) && m.content < videos.length + 1 && m.content > 0;
-    const collector = message.channel.createMessageCollector({
+    const row = getMusicButtonsOptions();
+
+    await message.reply({
+      content: resp,
+      components: [row],
+      ephemeral: true,
+    });
+
+    const filter = (btn) => {
+      return message.author.id === btn.user.id;
+    };
+
+    const collector = message.channel.createMessageComponentCollector({
       filter,
       max: 1,
-      time: 1000 * 10,
+      time: 1000 * 15,
     });
 
     collector.on("collect", async (m) => {
-      const index = parseInt(m.content);
-      if (!isNaN(index)) {
-        play(videos[index - 1].url, player, message);
-      }
+      play(videos[+m.customId].url, player, message);
     });
 
-    collector.on("end", (collected) => {
-      console.log(`Collected ${collected.size} items`);
+    collector.on("end", async (collection) => {
+      collection.forEach((e) => {
+        console.log(e.message.author);
+        if (e.message.author.bot)
+          e.message.edit({
+            content: "Um corno escolheu uma música",
+            components: [],
+          });
+      });
     });
   });
 };

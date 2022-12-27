@@ -1,4 +1,8 @@
-const Discord = require("discord.js");
+const {
+  Client,
+  Intents,
+} = require("discord.js");
+
 require("dotenv").config();
 const { Player } = require("discord-music-player");
 const { addSpeechEvent } = require("discord-speech-recognition");
@@ -6,14 +10,15 @@ const { doSearch, play } = require("./js/play");
 const { joinRoom } = require("./js/room");
 const { getGuildQueue } = require("./js/guild-queue");
 const { chatValidation } = require("./js/chat-validation");
+const { getMusicButtonsOptions } = require("./js/button");
 
 let currentPlaylist;
 
-const client = new Discord.Client({
+const client = new Client({
   intents: [
-    Discord.Intents.FLAGS.GUILDS,
-    Discord.Intents.FLAGS.GUILD_MESSAGES,
-    Discord.Intents.FLAGS.GUILD_VOICE_STATES,
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_VOICE_STATES,
   ],
 });
 
@@ -24,9 +29,7 @@ const settings = {
 
 const player = new Player(client, {
   leaveOnEmpty: false,
-})
-
-console.log(player);
+});
 
 addSpeechEvent(client, { lang: "pt-BR" });
 
@@ -46,7 +49,7 @@ client.on("speech", (message) => {
   }
 });
 
-client.on("messageCreate", (message) => {
+client.on("messageCreate", async (message) => {
   if (!settings.prefixes.includes(message.content.charAt(0))) return;
 
   const args = message.content.slice(1).trim().split(/ +/g);
@@ -65,19 +68,19 @@ client.on("messageCreate", (message) => {
       break;
     case "skip":
       if (!chatValidation(client, message)) return;
-      getGuildQueue(player, message).skip();
+      getGuildQueue(player, message)?.skip();
       break;
     case "stop":
       if (!chatValidation(client, message)) return;
-      getGuildQueue(player, message).stop();
+      getGuildQueue(player, message)?.stop();
       break;
     case "pause":
       if (!chatValidation(client, message)) return;
-      getGuildQueue(player, message).setPaused(true);
+      getGuildQueue(player, message)?.setPaused(true);
       break;
     case "resume":
       if (!chatValidation(client, message)) return;
-      getGuildQueue(player, message).setPaused(false);
+      getGuildQueue(player, message)?.setPaused(false);
       break;
     case "playlist":
       if (currentPlaylist) {
@@ -88,46 +91,37 @@ client.on("messageCreate", (message) => {
     case "join":
       joinRoom(player, message);
       break;
+    case "command":
+      const row = getMusicButtonsOptions();
+
+      await message.reply({
+        content: "Escolha a música",
+        components: [row],
+        ephemeral: true,
+      });
+
+      const filter = (btn) => {
+        return message.author.id === btn.user.id;
+      };
+
+      const collector = message.channel.createMessageComponentCollector({
+        filter,
+        max: 1,
+        time: 1000 * 15,
+      });
+
+      collector.on("end", async (collection) => {
+        collection.forEach((e) => {
+          console.log(e.message.author);
+          if (e.message.author.bot)
+            e.message.edit({
+              content: "Um corno escolheu uma música",
+              components: [],
+            });
+        });
+      });
+      break;
   }
-
-  // if (
-  //   (command === "play" || command === "p") &&
-  //   chatValidation(client, message)
-  // ) {
-  //   if (args.join(" ").startsWith("https://")) {
-  //     play(args.join(" "), message, client);
-  //   } else {
-  //     doSearch(message, args, client);
-  //   }
-  // }
-
-  console.log("Command: ", command);
-  // if (command === "skip" && chatValidation(client, message)) {
-  //   getGuildQueue(player, message).skip();
-  // }
-
-  // if (command === "stop" && chatValidation(client, message)) {
-  //   getGuildQueue(player, message).stop();
-  // }
-
-  // if (command === "pause" && chatValidation(client, message)) {
-  //   getGuildQueue(player, message).setPaused(true);
-  // }
-
-  // if (command === "resume" && chatValidation(client, message)) {
-  //   getGuildQueue(player, message).setPaused(false);
-  // }
-
-  // if (command === "playlist") {
-  //   if (currentPlaylist) {
-  //     return message.channel.send(currentPlaylist);
-  //   }
-  //   message.channel.send("Não há uma playlist!");
-  // }
-
-  // if (command === "join" && chatValidation(client, message)) {
-  //   joinRoom(message, client);
-  // }
 });
 
 client.login(settings.token);
