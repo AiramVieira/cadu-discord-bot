@@ -28,7 +28,8 @@ const settings = {
 };
 
 const player = new Player(client, {
-  leaveOnEmpty: false,
+  leaveOnEmpty: true,
+  leaveOnEnd: false,
 });
 
 addSpeechEvent(client, { lang: "pt-BR" });
@@ -43,9 +44,23 @@ client.on("speech", (message) => {
   if (message.author.id === client.user.id || message.author.bot) return;
 
   const args = message.content.replace(/^\w*\s/g, "");
+  const msg = message.content.toLowerCase();
 
-  if (message.content.toLowerCase().startsWith("play")) {
+  if (msg.startsWith("play") || msg.startsWith("tocar")) {
+    console.log("playing:", args)
     play(args, player, message);
+  }
+
+  if (msg.startsWith("parar música")) {
+    getGuildQueue(player, message)?.stop();
+  }
+
+  if (msg.startsWith("pausar música")) {
+    getGuildQueue(player, message)?.setPaused(true);
+  }
+
+  if (msg.startsWith("retomar música")) {
+    getGuildQueue(player, message)?.setPaused(false);
   }
 });
 
@@ -122,6 +137,8 @@ client.on("messageCreate", async (message) => {
       });
       break;
   }
+
+  console.log("Command: ", command);
 });
 
 client.login(settings.token);

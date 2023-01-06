@@ -2,28 +2,47 @@ const search = require("yt-search");
 const { getMusicButtonsOptions } = require("./button");
 const { joinRoom, exitRoom } = require("./room");
 
+const _play = (queue, url, message) => {
+  try {
+    console.log('url: ', url);
+    return new Promise(async (resolve) => {
+      let song = await queue
+        .play(url)
+        .then(() => {
+          let msg = "**Playlist atual:**\n";
+          for (let i = 0; i < queue.songs.length; i++) {
+            msg += `${i + 1}) \`${queue.songs[i].name}\`\n`;
+          }
+
+          currentPlaylist = msg;
+
+          message.channel.send(currentPlaylist);
+          resolve();
+        })
+        .catch(async (err) => {
+          console.log(err);
+        })
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 const play = async (url, player, message) => {
   let queue = await joinRoom(player, message);
-  // let queue = client.player.createQueue(message.guild.id);
-  // await queue.join(message.member.voice.channel);
+  _play(queue, url, message);
+  // if (url.includes('index')) {
+  //   _play(queue, url, message).then(() => {
+  //     const indexParam = url.indexOf('index') + 6;
+  //     const songIndex = url.substring(indexParam, indexParam + 1);
+  //     const newUrl = url.replace(`index=${songIndex}`, `index=${songIndex++}`);
+  //     console.log(songIndex);
 
-  let song = await queue
-    .play(url)
-    .then(() => {
-      let msg = "**Playlist atual:**\n";
-      for (let i = 0; i < queue.songs.length; i++) {
-        msg += `${i + 1}) \`${queue.songs[i].name}\`\n`;
-      }
-
-      currentPlaylist = msg;
-
-      message.channel.send(currentPlaylist);
-      return;
-    })
-    .catch(async (err) => {
-      console.log(err);
-      exitRoom(player, message);
-    });
+  //     play(newUrl, player, message)
+  //   })
+  // } else {
+  //   _play(queue, url, message)
+  // }
 };
 
 const doSearch = (args, player, message) => {
@@ -36,10 +55,6 @@ const doSearch = (args, player, message) => {
     for (let i = 0; i < videos.length; i++) {
       resp += `**[${parseInt(i) + 1}]:** \`${videos[i].title}\`\n`;
     }
-
-    // resp += `\n**Escolhe um número aí meu patrão \`1-${videos.length}\``;
-
-    // message.channel.send(resp);
 
     const row = getMusicButtonsOptions();
 
