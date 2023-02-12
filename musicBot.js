@@ -1,6 +1,6 @@
 const {
   Client,
-  Intents,
+  Intents
 } = require("discord.js");
 
 require("dotenv").config();
@@ -10,10 +10,6 @@ const { doSearch, play } = require("./js/play");
 const { joinRoom } = require("./js/room");
 const { getGuildQueue } = require("./js/guild-queue");
 const { chatValidation } = require("./js/chat-validation");
-const { getMusicButtonsOptions } = require("./js/button");
-
-let currentPlaylist;
-
 const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
@@ -32,7 +28,11 @@ const player = new Player(client, {
   leaveOnEnd: false,
 });
 
-addSpeechEvent(client, { lang: "pt-BR" });
+addSpeechEvent(client, { lang: "pt-BR | en-US" });
+
+function currentCommand(command) {
+  console.log("Command:", command);
+}
 
 client.on("ready", () => {
   console.log("I am ready to Play songs");
@@ -47,20 +47,27 @@ client.on("speech", (message) => {
   const msg = message.content.toLowerCase();
 
   if (msg.startsWith("play") || msg.startsWith("tocar")) {
-    console.log("playing:", args)
+    currentCommand(args);
     play(args, player, message);
   }
 
   if (msg.startsWith("parar música")) {
+    currentCommand(args);
     getGuildQueue(player, message)?.stop();
   }
 
   if (msg.startsWith("pausar música")) {
+    currentCommand(args);
     getGuildQueue(player, message)?.setPaused(true);
   }
 
   if (msg.startsWith("retomar música")) {
     getGuildQueue(player, message)?.setPaused(false);
+  }
+
+  if (msg.startsWith("pular música")) {
+    currentCommand(args);
+    getGuildQueue(player, message)?.skip();
   }
 });
 
@@ -69,6 +76,8 @@ client.on("messageCreate", async (message) => {
 
   const args = message.content.slice(1).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
+
+  currentCommand(args);
 
   switch (command) {
     case "play":
@@ -97,48 +106,10 @@ client.on("messageCreate", async (message) => {
       if (!chatValidation(client, message)) return;
       getGuildQueue(player, message)?.setPaused(false);
       break;
-    case "playlist":
-      if (currentPlaylist) {
-        return message.channel.send(currentPlaylist);
-      }
-      message.channel.send("Não há uma playlist!");
-      break;
     case "join":
       joinRoom(player, message);
       break;
-    case "command":
-      const row = getMusicButtonsOptions();
-
-      await message.reply({
-        content: "Escolha a música",
-        components: [row],
-        ephemeral: true,
-      });
-
-      const filter = (btn) => {
-        return message.author.id === btn.user.id;
-      };
-
-      const collector = message.channel.createMessageComponentCollector({
-        filter,
-        max: 1,
-        time: 1000 * 15,
-      });
-
-      collector.on("end", async (collection) => {
-        collection.forEach((e) => {
-          console.log(e.message.author);
-          if (e.message.author.bot)
-            e.message.edit({
-              content: "Um corno escolheu uma música",
-              components: [],
-            });
-        });
-      });
-      break;
   }
-
-  console.log("Command: ", command);
 });
 
 client.login(settings.token);

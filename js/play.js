@@ -2,22 +2,24 @@ const search = require("yt-search");
 const { getMusicButtonsOptions } = require("./button");
 const { joinRoom, exitRoom } = require("./room");
 
-const _play = (queue, url, message) => {
+const _play = (queue, url, message, showPlaylist) => {
   try {
     console.log('url: ', url);
     return new Promise(async (resolve) => {
-      let song = await queue
+      queue
         .play(url)
         .then(() => {
-          let msg = "**Playlist atual:**\n";
-          for (let i = 0; i < queue.songs.length; i++) {
-            msg += `${i + 1}) \`${queue.songs[i].name}\`\n`;
+          if (showPlaylist) {
+            let msg = "**Playlist atual:**\n";
+            for (let i = 0; i < queue.songs.length; i++) {
+              msg += `${i + 1}) \`${queue.songs[i].name}\`\n`;
+            }
+
+            currentPlaylist = msg;
+
+            message.channel.send(currentPlaylist);
+            resolve();
           }
-
-          currentPlaylist = msg;
-
-          message.channel.send(currentPlaylist);
-          resolve();
         })
         .catch(async (err) => {
           console.log(err);
@@ -28,21 +30,9 @@ const _play = (queue, url, message) => {
   }
 }
 
-const play = async (url, player, message) => {
+const play = async (url, player, message, showPlaylist = true) => {
   let queue = await joinRoom(player, message);
-  _play(queue, url, message);
-  // if (url.includes('index')) {
-  //   _play(queue, url, message).then(() => {
-  //     const indexParam = url.indexOf('index') + 6;
-  //     const songIndex = url.substring(indexParam, indexParam + 1);
-  //     const newUrl = url.replace(`index=${songIndex}`, `index=${songIndex++}`);
-  //     console.log(songIndex);
-
-  //     play(newUrl, player, message)
-  //   })
-  // } else {
-  //   _play(queue, url, message)
-  // }
+  _play(queue, url, message, showPlaylist);
 };
 
 const doSearch = (args, player, message) => {
